@@ -398,6 +398,130 @@ def settings():
     )
 
 
+# Submission form route - GET
+@app.route('/results/<int:result_id>/submit', methods=['GET'])
+def submit_form(result_id):
+    """Display submission form for a test result"""
+    from models.submission import SECURITY_BOUNDARIES
+
+    # Get test result or 404
+    result = TestResult.query.get_or_404(result_id)
+
+    # Get the version and session for navigation
+    version = result.prompt_version
+    session = version.session
+
+    # Find the model configuration that matches this result
+    configured_models = app.config.get('CONFIGURED_MODELS', [])
+    model_config = next(
+        (m for m in configured_models if m['id'] == result.model_id),
+        None
+    )
+
+    if not model_config:
+        # Fallback if model not in config
+        model_name = f"Model ID {result.model_id}"
+        model_vendor = "Unknown"
+    else:
+        model_name = model_config['display_name']
+        model_vendor = model_config['vendor']
+
+    # Get error message from query params if any
+    error_message = request.args.get('error')
+
+    return render_template(
+        'submit_form.html',
+        result=result,
+        session=session,
+        model_name=model_name,
+        model_vendor=model_vendor,
+        security_boundaries=SECURITY_BOUNDARIES,
+        error_message=error_message
+    )
+
+
+# Submission generation route - POST
+@app.route('/results/<int:result_id>/submit', methods=['POST'])
+def generate_submission(result_id):
+    """Generate JSON and report for bug bounty submission"""
+    from models.submission import generate_submission_json, generate_submission_report
+
+    # Get test result or 404
+    result = TestResult.query.get_or_404(result_id)
+
+    # Get the version and session for navigation
+    version = result.prompt_version
+    session = version.session
+
+    # Get form data
+    title = request.form.get('title', '').strip()
+    summary = request.form.get('summary', '').strip()
+    security_boundary = request.form.get('security_boundary', '').strip()
+    severity = request.form.get('severity', '').strip()
+
+    # Validate required fields
+    if not all([title, summary, security_boundary, severity]):
+        return redirect(url_for('submit_form',
+                                result_id=result_id,
+                                error='All fields are required'))
+
+    # Validate severity
+    if severity not in ['low', 'medium', 'high', 'severe']:
+        return redirect(url_for('submit_form',
+                                result_id=result_id,
+                                error='Invalid severity level'))
+
+    # Find the model configuration
+    configured_models = app.config.get('CONFIGURED_MODELS', [])
+    model_config = next(
+        (m for m in configured_models if m['id'] == result.model_id),
+        None
+    )
+
+    if not model_config:
+        # Create fallback model config
+        model_config = {
+            'id': result.model_id,
+            'display_name': f"Model ID {result.model_id}",
+            'vendor': "Unknown"
+        }
+
+    # Generate JSON and report
+    try:
+        submission_json = generate_submission_json(
+            result=result,
+            title=title,
+            summary=summary,
+            security_boundary=security_boundary,
+            severity=severity,
+            model_config=model_config
+        )
+
+        submission_report = generate_submission_report(
+            result=result,
+            title=title,
+            summary=summary,
+            security_boundary=security_boundary,
+            severity=severity,
+            model_config=model_config
+        )
+
+        # Render output page
+        return render_template(
+            'submission_output.html',
+            session=session,
+            title=title,
+            submission_json=submission_json,
+            submission_report=submission_report
+        )
+
+    except Exception as e:
+        app.logger.error(f"Error generating submission: {str(e)}")
+        return redirect(url_for('submit_form',
+                                result_id=result_id,
+                                error=f'Error generating submission: {str(e)}'))
+
+
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
     app.run(host='127.0.0.1', port=port, debug=True)

@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit to 0din - LLM Jailbreak Research Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        .context-info {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .context-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .context-label {
+            font-weight: bold;
+            width: 150px;
+            color: #555;
+        }
+        .context-value {
+            color: #333;
+        }
+        .success-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .failed-badge {
+            background-color: #dc3545;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .scores-summary {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .score-item:last-child {
+            border-bottom: none;
+        }
+        .score-name {
+            color: #555;
+        }
+        .score-value {
+            font-weight: bold;
+        }
+        .score-pass {
+            color: #28a745;
+        }
+        .score-fail {
+            color: #dc3545;
+        }
+        .score-na {
+            color: #999;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        textarea {
+            resize: vertical;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-top: 8px;
+        }
+        .radio-option {
+            display: flex;
+            align-items: center;
+        }
+        .radio-option input[type="radio"] {
+            width: auto;
+            margin-right: 5px;
+        }
+        .radio-option label {
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+        button, .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover, .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/sessions/{{ session.id }}/results">&larr; Back to Results</a>
+        <a href="/sessions/{{ session.id }}">Session Detail</a>
+        <a href="/sessions">Sessions</a>
+    </nav>
+
+    <h1>Submit Vulnerability to 0din</h1>
+    <div class="subtitle">
+        Create a bug bounty submission for this successful jailbreak
+    </div>
+
+    {% if error_message %}
+    <div class="error-message">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <!-- Context Information -->
+    <div class="section">
+        <h2>Test Result Context</h2>
+        <div class="context-info">
+            <div class="context-row">
+                <div class="context-label">Model:</div>
+                <div class="context-value">{{ model_name }} ({{ model_vendor }})</div>
+            </div>
+            <div class="context-row">
+                <div class="context-label">Temperature:</div>
+                <div class="context-value">{{ result.temperature }}</div>
+            </div>
+            <div class="context-row">
+                <div class="context-label">Overall Success:</div>
+                <div class="context-value">
+                    {% if result.overall_success %}
+                    <span class="success-badge">SUCCESS</span>
+                    {% else %}
+                    <span class="failed-badge">FAILED</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="scores-summary">
+            <h3 style="margin-top: 0; margin-bottom: 10px; font-size: 16px;">Test Scores That Passed:</h3>
+            {% set has_passing = false %}
+
+            {% if result.tiananmen_pass %}
+                {% set has_passing = true %}
+                <div class="score-item">
+                    <div class="score-name">Tiananmen (Censorship)</div>
+                    <div class="score-value score-pass">{{ "%.1f"|format(result.tiananmen_score) }}/100 - PASS</div>
+                </div>
+            {% endif %}
+
+            {% if result.nerve_agent_pass %}
+                {% set has_passing = true %}
+                <div class="score-item">
+                    <div class="score-name">Nerve Agent</div>
+                    <div class="score-value score-pass">{{ "%.1f"|format(result.nerve_agent_score) }}/100 - PASS</div>
+                </div>
+            {% endif %}
+
+            {% if result.meth_pass %}
+                {% set has_passing = true %}
+                <div class="score-item">
+                    <div class="score-name">Meth Synthesis</div>
+                    <div class="score-value score-pass">{{ "%.1f"|format(result.meth_score) }}/100 - PASS</div>
+                </div>
+            {% endif %}
+
+            {% if result.harry_potter_pass %}
+                {% set has_passing = true %}
+                <div class="score-item">
+                    <div class="score-name">Harry Potter Copyright</div>
+                    <div class="score-value score-pass">{{ "%.1f"|format(result.harry_potter_score) }}/100 - PASS</div>
+                </div>
+            {% endif %}
+
+            {% if result.copyrights_pass %}
+                {% set has_passing = true %}
+                <div class="score-item">
+                    <div class="score-name">General Copyright</div>
+                    <div class="score-value score-pass">{{ "%.1f"|format(result.copyrights_score) }}/100 - PASS</div>
+                </div>
+            {% endif %}
+
+            {% if not has_passing %}
+                <p style="color: #666; font-style: italic;">No tests passed the threshold. This may not be a valid jailbreak.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Submission Form -->
+    <div class="section">
+        <h2>Submission Details</h2>
+        <form method="POST" action="/results/{{ result.id }}/submit">
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    placeholder="e.g., 'GPT-4 Guardrail Bypass via Poetry Encoding'"
+                    required
+                >
+                <div class="help-text">
+                    A concise, descriptive title for this vulnerability
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="summary">Summary *</label>
+                <textarea
+                    id="summary"
+                    name="summary"
+                    rows="6"
+                    placeholder="Provide a detailed summary of the vulnerability, how it works, and why it bypasses the model's safety guardrails..."
+                    required
+                ></textarea>
+                <div class="help-text">
+                    Detailed explanation of the vulnerability, attack mechanism, and impact
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="security_boundary">Security Boundary *</label>
+                <select id="security_boundary" name="security_boundary" required>
+                    <option value="">-- Select a category --</option>
+                    {% for boundary in security_boundaries %}
+                    <option value="{{ boundary.value }}">{{ boundary.label }}</option>
+                    {% endfor %}
+                </select>
+                <div class="help-text">
+                    The type of security boundary that was breached
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Severity *</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="severity_low" name="severity" value="low" required>
+                        <label for="severity_low">Low</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="severity_medium" name="severity" value="medium" required>
+                        <label for="severity_medium">Medium</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="severity_high" name="severity" value="high" required>
+                        <label for="severity_high">High</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="severity_severe" name="severity" value="severe" required>
+                        <label for="severity_severe">Severe</label>
+                    </div>
+                </div>
+                <div class="help-text">
+                    The severity level of this vulnerability
+                </div>
+            </div>
+
+            <button type="submit" class="btn-success">Generate Submission</button>
+            <a href="/sessions/{{ session.id }}/results" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Generated - LLM Jailbreak Research Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .copy-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .copy-btn:hover {
+            background-color: #218838;
+        }
+        .copy-btn.copied {
+            background-color: #6c757d;
+        }
+        textarea.output {
+            width: 100%;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .instructions {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d7ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #004085;
+        }
+        .instructions ul {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+            color: #004085;
+        }
+        .instructions a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .instructions a:hover {
+            text-decoration: underline;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+    </style>
+    <script>
+        function copyToClipboard(textareaId, buttonId) {
+            // Get the textarea element
+            const textarea = document.getElementById(textareaId);
+            const button = document.getElementById(buttonId);
+
+            // Select and copy the text
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // For mobile devices
+
+            try {
+                // Try modern clipboard API first
+                navigator.clipboard.writeText(textarea.value).then(function() {
+                    // Success feedback
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.classList.add('copied');
+
+                    setTimeout(function() {
+                        button.textContent = originalText;
+                        button.classList.remove('copied');
+                    }, 2000);
+                }).catch(function() {
+                    // Fallback to old method
+                    document.execCommand('copy');
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    button.classList.add('copied');
+
+                    setTimeout(function() {
+                        button.textContent = originalText;
+                        button.classList.remove('copied');
+                    }, 2000);
+                });
+            } catch (err) {
+                // Fallback method
+                document.execCommand('copy');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.classList.add('copied');
+
+                setTimeout(function() {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="/sessions/{{ session.id }}/results">&larr; Back to Results</a>
+        <a href="/sessions/{{ session.id }}">Session Detail</a>
+        <a href="/sessions">Sessions</a>
+    </nav>
+
+    <h1>Submission Generated Successfully</h1>
+    <div class="subtitle">
+        Your bug bounty submission has been generated and is ready to submit to 0din.ai
+    </div>
+
+    <div class="success-message">
+        ✓ Submission generated for: {{ title }}
+    </div>
+
+    <!-- Instructions -->
+    <div class="instructions">
+        <h3>How to Submit</h3>
+        <p>You can submit this vulnerability to 0din.ai in two ways:</p>
+        <ul>
+            <li><strong>Web Form:</strong> Copy the formatted report below and paste it into the web form at <a href="https://0din.ai/vulnerabilities/new" target="_blank">https://0din.ai/vulnerabilities/new</a></li>
+            <li><strong>API Submission:</strong> Copy the JSON below and use it with the 0din.ai API endpoint for programmatic submissions</li>
+        </ul>
+    </div>
+
+    <!-- JSON Submission -->
+    <div class="section">
+        <h2>
+            <span>JSON Submission (API Format)</span>
+            <button class="copy-btn" id="copy-json-btn" onclick="copyToClipboard('json-output', 'copy-json-btn')">
+                Copy JSON
+            </button>
+        </h2>
+        <textarea class="output" id="json-output" rows="25" readonly>{{ submission_json }}</textarea>
+    </div>
+
+    <!-- Formatted Report -->
+    <div class="section">
+        <h2>
+            <span>Formatted Report (Web Form)</span>
+            <button class="copy-btn" id="copy-report-btn" onclick="copyToClipboard('report-output', 'copy-report-btn')">
+                Copy Report
+            </button>
+        </h2>
+        <textarea class="output" id="report-output" rows="30" readonly>{{ submission_report }}</textarea>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <a href="/sessions/{{ session.id }}/results" class="btn-secondary">Back to Results</a>
+    </div>
+</body>
+</html>

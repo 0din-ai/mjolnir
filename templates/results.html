@@ -294,6 +294,28 @@
             border-radius: 4px;
         }
 
+        /* Buttons */
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
         /* No Results Message */
         .no-results {
             text-align: center;
@@ -523,6 +545,13 @@
                                 </tr>
                             </tbody>
                         </table>
+
+                        <!-- Submit to 0din Button -->
+                        <div style="margin-top: 15px;">
+                            <a href="/results/{{ result.id }}/submit" class="btn btn-success">
+                                Submit to 0din
+                            </a>
+                        </div>
 
                         <!-- Raw Response Section -->
                         {% if result.response_text %}
