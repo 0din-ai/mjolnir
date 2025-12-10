@@ -177,6 +177,14 @@
             const body = document.getElementById('version-body-' + versionId);
             body.classList.toggle('expanded');
         }
+
+        function toggleAllModels() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.model-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+        }
     </script>
 </head>
 <body>
@@ -247,6 +255,56 @@
 
             <button type="submit">Save New Version</button>
         </form>
+    </div>
+
+    <div class="section">
+        <h2>Run Tests</h2>
+        {% if not current_prompt %}
+        <p style="color: #666;">Please save a prompt version before running tests.</p>
+        {% else %}
+        <form method="POST" action="/sessions/{{ session.id }}/run-tests">
+            <div class="form-group">
+                <label for="temperature">Temperature</label>
+                <input
+                    type="number"
+                    id="temperature"
+                    name="temperature"
+                    step="0.1"
+                    min="0"
+                    max="2"
+                    value="0.7"
+                    required
+                    style="width: 200px; padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px;"
+                >
+                <div class="help-text">
+                    Temperature controls randomness in model responses (0 = deterministic, 2 = very random). Default: 0.7
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Model Selection</label>
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" id="select-all" onclick="toggleAllModels()">
+                        Select All / Deselect All
+                    </label>
+                </div>
+                <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: white;">
+                    {% for model in models %}
+                    <label style="display: block; margin-bottom: 8px; font-weight: normal; cursor: pointer;">
+                        <input type="checkbox" name="model_ids" value="{{ model.id }}" class="model-checkbox">
+                        <strong>{{ model.display_name }}</strong> <span style="color: #666; font-size: 12px;">({{ model.vendor }})</span>
+                    </label>
+                    {% endfor %}
+                </div>
+                <div class="help-text">
+                    Select which models to test the current prompt against. Tests run sequentially with 5-second delays.
+                </div>
+            </div>
+
+            <button type="submit">Run Tests</button>
+        </form>
+        {% endif %}
     </div>
 
     <div class="version-history">

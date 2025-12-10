@@ -146,6 +146,9 @@ def session_detail(session_id):
     success_message = request.args.get('success')
     error_message = request.args.get('error')
 
+    # Get configured models for test execution UI
+    configured_models = app.config.get('CONFIGURED_MODELS', [])
+
     return render_template(
         'session_detail.html',
         session=session,
@@ -153,7 +156,8 @@ def session_detail(session_id):
         current_prompt=current_prompt,
         current_reference=current_reference,
         success_message=success_message,
-        error_message=error_message
+        error_message=error_message,
+        models=configured_models
     )
 
 
@@ -226,6 +230,74 @@ def rollback_version(session_id, version_id):
     return redirect(url_for('session_detail',
                             session_id=session_id,
                             success=f'Rolled back to version #{version_id}'))
+
+
+# Run tests route
+@app.route('/sessions/<int:session_id>/run-tests', methods=['POST'])
+def run_tests(session_id):
+    """Run tests against selected models using the current prompt version"""
+    from models.test_runner import run_tests_sequential
+
+    # Verify session exists
+    session = TestSession.query.get_or_404(session_id)
+
+    # Get form data
+    model_ids = request.form.getlist('model_ids')
+    temperature = request.form.get('temperature', type=float)
+
+    # Validate model selection
+    if not model_ids:
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                error='Please select at least one model to test'))
+
+    # Validate temperature
+    if temperature is None or temperature < 0 or temperature > 2:
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                error='Temperature must be between 0 and 2'))
+
+    # Get current version
+    current_version = PromptVersion.query.filter_by(
+        session_id=session_id,
+        is_current_version=True
+    ).first()
+
+    if not current_version:
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                error='Please save a prompt version before running tests'))
+
+    # Get OpenRouter API key
+    openrouter_key = get_api_key('openrouter')
+    if not openrouter_key:
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                error='Please configure OpenRouter API key in settings'))
+
+    # Run tests sequentially
+    try:
+        result_ids = run_tests_sequential(
+            version_id=current_version.id,
+            model_ids=model_ids,
+            temperature=temperature,
+            api_key=openrouter_key,
+            prompt_text=current_version.prompt_text
+        )
+
+        # Success message
+        model_count = len(result_ids)
+        success_msg = f'Tests completed. {model_count} model{"s" if model_count != 1 else ""} tested.'
+
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                success=success_msg))
+
+    except Exception as e:
+        app.logger.error(f"Error running tests: {str(e)}")
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                error=f'Error running tests: {str(e)}'))
 
 
 # Settings route - display and save API keys
