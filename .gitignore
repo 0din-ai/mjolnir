@@ -33,5 +33,4 @@ data/
 Thumbs.db
 
 # uv
-uv.lock
 .python-version
