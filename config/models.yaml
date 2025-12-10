@@ -1,0 +1,77 @@
+# LLM Model Configuration
+# This file defines which models are available for testing in the application.
+# Each model requires three fields:
+#   - id: OpenRouter model identifier (format: "vendor/model-name")
+#   - display_name: User-friendly name shown in the UI
+#   - vendor: Provider/vendor name (e.g., "OpenAI", "Anthropic")
+#
+# Models are validated against OpenRouter's API on application startup.
+# See OpenRouter documentation: https://openrouter.ai/docs
+
+models:
+  # OpenAI Models
+  - id: "openai/gpt-4-turbo"
+    display_name: "GPT-4 Turbo"
+    vendor: "OpenAI"
+
+  - id: "openai/gpt-4"
+    display_name: "GPT-4"
+    vendor: "OpenAI"
+
+  - id: "openai/gpt-3.5-turbo"
+    display_name: "GPT-3.5 Turbo"
+    vendor: "OpenAI"
+
+  # Anthropic Models
+  - id: "anthropic/claude-3-opus"
+    display_name: "Claude 3 Opus"
+    vendor: "Anthropic"
+
+  - id: "anthropic/claude-3-sonnet"
+    display_name: "Claude 3 Sonnet"
+    vendor: "Anthropic"
+
+  - id: "anthropic/claude-3-haiku"
+    display_name: "Claude 3 Haiku"
+    vendor: "Anthropic"
+
+  # Google Models
+  - id: "google/gemini-pro"
+    display_name: "Gemini Pro"
+    vendor: "Google"
+
+  - id: "google/gemini-pro-1.5"
+    display_name: "Gemini Pro 1.5"
+    vendor: "Google"
+
+  # Meta Models
+  - id: "meta-llama/llama-3-70b-instruct"
+    display_name: "Llama 3 70B Instruct"
+    vendor: "Meta"
+
+  - id: "meta-llama/llama-3-8b-instruct"
+    display_name: "Llama 3 8B Instruct"
+    vendor: "Meta"
+
+  # Mistral Models
+  - id: "mistralai/mistral-large"
+    display_name: "Mistral Large"
+    vendor: "Mistral"
+
+  - id: "mistralai/mistral-medium"
+    display_name: "Mistral Medium"
+    vendor: "Mistral"
+
+  # Cohere Models
+  - id: "cohere/command-r-plus"
+    display_name: "Command R+"
+    vendor: "Cohere"
+
+  - id: "cohere/command-r"
+    display_name: "Command R"
+    vendor: "Cohere"
+
+  # xAI Models
+  - id: "x-ai/grok-beta"
+    display_name: "Grok Beta"
+    vendor: "xAI"
