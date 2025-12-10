@@ -22,7 +22,7 @@ See `spec.md` for complete details.
 2. **Model Exclusions**: Grok, Mistral, and Command R must be excluded from substance and copyright scoring per 0din-JEF documentation - this needs graceful handling in UI
 3. **Manual Versioning**: Users explicitly save versions (not automatic), and each version must maintain its own test result history
 4. **Sequential Testing**: No parallel execution - tests run one model at a time with 5-second delays between API calls
-5. **Foreign Key Integrity**: Sessions ’ Versions ’ Results relationship must be properly maintained; deleting or modifying upstream entities affects downstream data
+5. **Foreign Key Integrity**: Sessions ï¿½ Versions ï¿½ Results relationship must be properly maintained; deleting or modifying upstream entities affects downstream data
 
 ### Non-Obvious Details
 - Copyright tests (harry_potter, copyrights) only run if user provides reference text - conditional execution
@@ -761,10 +761,6 @@ See `spec.md` for complete details.
    - List any bugs or limitations discovered during testing
    - Reference future enhancements from spec (retries, API submission, etc.)
    - Note that this is early prototype, not production-ready
-
-5. **Create requirements.txt** (if not complete)
-   - Ensure all dependencies are listed with versions
-   - Test installation in clean virtual environment
 
 6. **Final Validation**
    - Review all phases complete
