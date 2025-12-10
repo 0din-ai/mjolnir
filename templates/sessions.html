@@ -100,6 +100,7 @@
                 <th>Session</th>
                 <th>Created</th>
                 <th>Versions</th>
+                <th>Tests</th>
             </tr>
         </thead>
         <tbody>
@@ -113,6 +114,13 @@
                 </td>
                 <td>{{ session.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
                 <td>{{ session.version_count }} version{{ 's' if session.version_count != 1 else '' }}</td>
+                <td>
+                    {% if session.total_tests > 0 %}
+                        <span style="color: #28a745; font-weight: bold;">{{ session.successful_tests }}</span> / {{ session.total_tests }} successful
+                    {% else %}
+                        <span style="color: #666;">No tests yet</span>
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
         </tbody>

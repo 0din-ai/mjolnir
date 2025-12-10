@@ -87,14 +87,26 @@ def sessions():
     # Query all sessions ordered by most recent first
     all_sessions = TestSession.query.order_by(TestSession.created_at.desc()).all()
 
-    # Add version count to each session
+    # Add version count and test statistics to each session
     sessions_with_counts = []
     for session in all_sessions:
+        # Get all test results for this session
+        test_results = TestResult.query\
+            .join(PromptVersion, TestResult.version_id == PromptVersion.id)\
+            .filter(PromptVersion.session_id == session.id)\
+            .all()
+
+        # Calculate statistics
+        total_tests = len(test_results)
+        successful_tests = sum(1 for result in test_results if result.overall_success)
+
         sessions_with_counts.append({
             'id': session.id,
             'title': session.title,
             'created_at': session.created_at,
-            'version_count': len(session.prompt_versions)
+            'version_count': len(session.prompt_versions),
+            'total_tests': total_tests,
+            'successful_tests': successful_tests
         })
 
     return render_template('sessions.html', sessions=sessions_with_counts)
