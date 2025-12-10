@@ -74,10 +74,158 @@ with app.app_context():
         app.logger.error(f"Failed to load model configuration: {str(e)}")
         app.config['CONFIGURED_MODELS'] = []
 
-# Root route - basic confirmation
+# Root route - redirect to sessions
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return redirect(url_for('sessions'))
+
+
+# Session list route
+@app.route('/sessions')
+def sessions():
+    """Display list of all test sessions"""
+    # Query all sessions ordered by most recent first
+    all_sessions = TestSession.query.order_by(TestSession.created_at.desc()).all()
+
+    # Add version count to each session
+    sessions_with_counts = []
+    for session in all_sessions:
+        sessions_with_counts.append({
+            'id': session.id,
+            'title': session.title,
+            'created_at': session.created_at,
+            'version_count': len(session.prompt_versions)
+        })
+
+    return render_template('sessions.html', sessions=sessions_with_counts)
+
+
+# New session form route
+@app.route('/sessions/new')
+def new_session():
+    """Display form to create a new test session"""
+    return render_template('new_session.html')
+
+
+# Create session route
+@app.route('/sessions', methods=['POST'])
+def create_session():
+    """Create a new test session"""
+    title = request.form.get('title', '').strip()
+
+    # Create new session (title can be NULL if empty)
+    new_session = TestSession(
+        title=title if title else None
+    )
+    db.session.add(new_session)
+    db.session.commit()
+
+    # Redirect to session detail page
+    return redirect(url_for('session_detail', session_id=new_session.id))
+
+
+# Session detail route
+@app.route('/sessions/<int:session_id>')
+def session_detail(session_id):
+    """Display session detail with prompt editing and version history"""
+    # Get session or 404
+    session = TestSession.query.get_or_404(session_id)
+
+    # Get all versions for this session, ordered by creation date (newest first)
+    versions = PromptVersion.query.filter_by(session_id=session_id)\
+        .order_by(PromptVersion.created_at.desc()).all()
+
+    # Find current version
+    current_version = next((v for v in versions if v.is_current_version), None)
+
+    # Extract current prompt and reference text if exists
+    current_prompt = current_version.prompt_text if current_version else None
+    current_reference = current_version.reference_text if current_version else None
+
+    # Get success/error messages from query params (for redirects)
+    success_message = request.args.get('success')
+    error_message = request.args.get('error')
+
+    return render_template(
+        'session_detail.html',
+        session=session,
+        versions=versions,
+        current_prompt=current_prompt,
+        current_reference=current_reference,
+        success_message=success_message,
+        error_message=error_message
+    )
+
+
+# Save new version route
+@app.route('/sessions/<int:session_id>/versions', methods=['POST'])
+def save_version(session_id):
+    """Save a new prompt version for this session"""
+    # Verify session exists
+    session = TestSession.query.get_or_404(session_id)
+
+    # Get form data
+    prompt_text = request.form.get('prompt_text', '').strip()
+    reference_text = request.form.get('reference_text', '').strip()
+    notes = request.form.get('notes', '').strip()
+
+    # Validate required field
+    if not prompt_text:
+        return redirect(url_for('session_detail',
+                                session_id=session_id,
+                                error='Prompt text is required'))
+
+    # Set all existing versions to not current
+    PromptVersion.query.filter_by(session_id=session_id)\
+        .update({'is_current_version': False})
+
+    # Create new version as current
+    new_version = PromptVersion(
+        session_id=session_id,
+        prompt_text=prompt_text,
+        reference_text=reference_text if reference_text else None,
+        notes=notes if notes else None,
+        is_current_version=True
+    )
+    db.session.add(new_version)
+    db.session.commit()
+
+    return redirect(url_for('session_detail',
+                            session_id=session_id,
+                            success='New version saved successfully'))
+
+
+# Rollback to previous version route
+@app.route('/sessions/<int:session_id>/versions/<int:version_id>/rollback', methods=['POST'])
+def rollback_version(session_id, version_id):
+    """Rollback to a previous version by creating a new version with the old content"""
+    # Verify session exists
+    session = TestSession.query.get_or_404(session_id)
+
+    # Get the old version to rollback to
+    old_version = PromptVersion.query.filter_by(
+        id=version_id,
+        session_id=session_id
+    ).first_or_404()
+
+    # Set all existing versions to not current
+    PromptVersion.query.filter_by(session_id=session_id)\
+        .update({'is_current_version': False})
+
+    # Create new version with old content
+    rollback_version = PromptVersion(
+        session_id=session_id,
+        prompt_text=old_version.prompt_text,
+        reference_text=old_version.reference_text,
+        notes=f"Rolled back from version #{version_id}",
+        is_current_version=True
+    )
+    db.session.add(rollback_version)
+    db.session.commit()
+
+    return redirect(url_for('session_detail',
+                            session_id=session_id,
+                            success=f'Rolled back to version #{version_id}'))
 
 
 # Settings route - display and save API keys

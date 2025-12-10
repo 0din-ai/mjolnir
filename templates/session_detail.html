@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ session.title or 'Untitled Session' }} - LLM Jailbreak Research Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .session-meta {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+            resize: vertical;
+        }
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        button, .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        button:hover, .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .version-history {
+            margin-top: 30px;
+        }
+        .version-item {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            background-color: white;
+        }
+        .version-header {
+            padding: 15px;
+            cursor: pointer;
+            background-color: #f8f9fa;
+            border-radius: 4px 4px 0 0;
+        }
+        .version-header:hover {
+            background-color: #e9ecef;
+        }
+        .version-header.current {
+            background-color: #d4edda;
+            border: 2px solid #28a745;
+        }
+        .version-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .version-title {
+            font-weight: bold;
+            color: #333;
+        }
+        .version-date {
+            color: #666;
+            font-size: 12px;
+        }
+        .version-preview {
+            color: #666;
+            font-size: 13px;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+        .version-body {
+            padding: 15px;
+            display: none;
+            border-top: 1px solid #ddd;
+        }
+        .version-body.expanded {
+            display: block;
+        }
+        .version-content {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .current-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-left: 10px;
+        }
+    </style>
+    <script>
+        function toggleVersion(versionId) {
+            const body = document.getElementById('version-body-' + versionId);
+            body.classList.toggle('expanded');
+        }
+    </script>
+</head>
+<body>
+    <nav>
+        <a href="/sessions">&larr; Back to Sessions</a>
+        <a href="/settings">Settings</a>
+    </nav>
+
+    <h1>{{ session.title or 'Untitled Session' }}</h1>
+    <div class="session-meta">
+        Session ID: {{ session.id }} | Created: {{ session.created_at.strftime('%Y-%m-%d %H:%M') }}
+    </div>
+
+    {% if success_message %}
+    <div class="success-message">
+        {{ success_message }}
+    </div>
+    {% endif %}
+
+    {% if error_message %}
+    <div class="error-message">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <h2>Current Prompt</h2>
+        <form method="POST" action="/sessions/{{ session.id }}/versions">
+            <div class="form-group">
+                <label for="prompt_text">Prompt Text *</label>
+                <textarea
+                    id="prompt_text"
+                    name="prompt_text"
+                    rows="10"
+                    placeholder="Enter your test prompt here..."
+                    required
+                >{{ current_prompt or '' }}</textarea>
+                <div class="help-text">
+                    This is the main prompt that will be tested against the LLM models.
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reference_text">Reference Text (optional)</label>
+                <textarea
+                    id="reference_text"
+                    name="reference_text"
+                    rows="5"
+                    placeholder="Enter reference text for copyright tests..."
+                >{{ current_reference or '' }}</textarea>
+                <div class="help-text">
+                    Optional reference text used for copyright jailbreak tests (e.g., copyrighted content to test against).
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Version Notes (optional)</label>
+                <textarea
+                    id="notes"
+                    name="notes"
+                    rows="3"
+                    placeholder="Add notes about this version..."
+                ></textarea>
+                <div class="help-text">
+                    Optional notes to describe what changed in this version.
+                </div>
+            </div>
+
+            <button type="submit">Save New Version</button>
+        </form>
+    </div>
+
+    <div class="version-history">
+        <h2>Version History ({{ versions|length }} version{{ 's' if versions|length != 1 else '' }})</h2>
+
+        {% if versions %}
+            {% for version in versions %}
+            <div class="version-item">
+                <div class="version-header {% if version.is_current_version %}current{% endif %}" onclick="toggleVersion({{ version.id }})">
+                    <div class="version-meta">
+                        <div>
+                            <span class="version-title">Version #{{ loop.revindex }}</span>
+                            {% if version.is_current_version %}
+                            <span class="current-badge">CURRENT</span>
+                            {% endif %}
+                            <span class="version-date"> - {{ version.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                        </div>
+                    </div>
+                    {% if version.notes %}
+                    <div class="version-preview">Notes: {{ version.notes }}</div>
+                    {% endif %}
+                    <div class="version-preview">{{ version.prompt_text[:100] }}{% if version.prompt_text|length > 100 %}...{% endif %}</div>
+                </div>
+                <div id="version-body-{{ version.id }}" class="version-body">
+                    <h3>Prompt Text:</h3>
+                    <div class="version-content">{{ version.prompt_text }}</div>
+
+                    {% if version.reference_text %}
+                    <h3>Reference Text:</h3>
+                    <div class="version-content">{{ version.reference_text }}</div>
+                    {% endif %}
+
+                    {% if version.notes %}
+                    <h3>Notes:</h3>
+                    <div class="version-content">{{ version.notes }}</div>
+                    {% endif %}
+
+                    {% if not version.is_current_version %}
+                    <form method="POST" action="/sessions/{{ session.id }}/versions/{{ version.id }}/rollback" style="margin-top: 10px;">
+                        <button type="submit" class="btn-secondary btn-small">Rollback to This Version</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <p style="color: #666;">No versions saved yet. Save your first version above to begin testing.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

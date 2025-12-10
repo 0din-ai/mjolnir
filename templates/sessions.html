@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sessions - LLM Jailbreak Research Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+        nav {
+            margin-bottom: 20px;
+        }
+        nav a {
+            color: #007bff;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        .session-link {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .session-link:hover {
+            text-decoration: underline;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        .session-id {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/">Home</a>
+        <a href="/settings">Settings</a>
+    </nav>
+
+    <div class="header-section">
+        <h1>Test Sessions</h1>
+        <a href="/sessions/new" class="btn-primary">+ New Session</a>
+    </div>
+
+    {% if sessions %}
+    <table>
+        <thead>
+            <tr>
+                <th>Session</th>
+                <th>Created</th>
+                <th>Versions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr>
+                <td>
+                    <a href="/sessions/{{ session.id }}" class="session-link">
+                        <strong>{{ session.title or 'Untitled Session' }}</strong>
+                    </a>
+                    <div class="session-id">ID: {{ session.id }}</div>
+                </td>
+                <td>{{ session.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ session.version_count }} version{{ 's' if session.version_count != 1 else '' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No test sessions yet.</p>
+        <p><a href="/sessions/new" class="btn-primary">Create your first session</a></p>
+    </div>
+    {% endif %}
+</body>
+</html>

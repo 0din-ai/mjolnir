@@ -27,22 +27,11 @@ models:
     display_name: "Claude 3 Opus"
     vendor: "Anthropic"
 
-  - id: "anthropic/claude-3-sonnet"
-    display_name: "Claude 3 Sonnet"
-    vendor: "Anthropic"
-
   - id: "anthropic/claude-3-haiku"
     display_name: "Claude 3 Haiku"
     vendor: "Anthropic"
 
   # Google Models
-  - id: "google/gemini-pro"
-    display_name: "Gemini Pro"
-    vendor: "Google"
-
-  - id: "google/gemini-pro-1.5"
-    display_name: "Gemini Pro 1.5"
-    vendor: "Google"
 
   # Meta Models
   - id: "meta-llama/llama-3-70b-instruct"
@@ -57,21 +46,3 @@ models:
   - id: "mistralai/mistral-large"
     display_name: "Mistral Large"
     vendor: "Mistral"
-
-  - id: "mistralai/mistral-medium"
-    display_name: "Mistral Medium"
-    vendor: "Mistral"
-
-  # Cohere Models
-  - id: "cohere/command-r-plus"
-    display_name: "Command R+"
-    vendor: "Cohere"
-
-  - id: "cohere/command-r"
-    display_name: "Command R"
-    vendor: "Cohere"
-
-  # xAI Models
-  - id: "x-ai/grok-beta"
-    display_name: "Grok Beta"
-    vendor: "xAI"
