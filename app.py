@@ -149,6 +149,12 @@ def session_detail(session_id):
     # Get configured models for test execution UI
     configured_models = app.config.get('CONFIGURED_MODELS', [])
 
+    # Check if any test results exist for this session
+    has_results = TestResult.query\
+        .join(PromptVersion, TestResult.version_id == PromptVersion.id)\
+        .filter(PromptVersion.session_id == session_id)\
+        .first() is not None
+
     return render_template(
         'session_detail.html',
         session=session,
@@ -157,7 +163,8 @@ def session_detail(session_id):
         current_reference=current_reference,
         success_message=success_message,
         error_message=error_message,
-        models=configured_models
+        models=configured_models,
+        has_results=has_results
     )
 
 
@@ -298,6 +305,49 @@ def run_tests(session_id):
         return redirect(url_for('session_detail',
                                 session_id=session_id,
                                 error=f'Error running tests: {str(e)}'))
+
+
+# Results display route
+@app.route('/sessions/<int:session_id>/results')
+def session_results(session_id):
+    """Display test results for a session with summary statistics and filtering"""
+    from models.statistics import calculate_summary
+
+    # Get session or 404
+    session = TestSession.query.get_or_404(session_id)
+
+    # Get all versions for this session
+    versions = PromptVersion.query.filter_by(session_id=session_id)\
+        .order_by(PromptVersion.created_at.desc()).all()
+
+    # Get all test results for this session (across all versions)
+    # Join with PromptVersion to ensure we only get results for this session
+    all_results = TestResult.query\
+        .join(PromptVersion, TestResult.version_id == PromptVersion.id)\
+        .filter(PromptVersion.session_id == session_id)\
+        .order_by(TestResult.created_at.desc())\
+        .all()
+
+    # Calculate summary statistics
+    summary = calculate_summary(all_results)
+
+    # Group results by version
+    results_by_version = {}
+    for version in versions:
+        version_results = [r for r in all_results if r.version_id == version.id]
+        if version_results:
+            results_by_version[version.id] = {
+                'version': version,
+                'results': version_results
+            }
+
+    return render_template(
+        'results.html',
+        session=session,
+        summary=summary,
+        results_by_version=results_by_version,
+        all_results=all_results
+    )
 
 
 # Settings route - display and save API keys

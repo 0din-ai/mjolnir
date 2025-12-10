@@ -190,6 +190,9 @@
 <body>
     <nav>
         <a href="/sessions">&larr; Back to Sessions</a>
+        {% if has_results %}
+        <a href="/sessions/{{ session.id }}/results">View Results</a>
+        {% endif %}
         <a href="/settings">Settings</a>
     </nav>
 
