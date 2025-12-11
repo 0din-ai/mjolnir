@@ -183,47 +183,12 @@ The tool generates:
 
 ```
 1. Create Session: "GPT-4 Poetry Encoding Tests"
-   ↓
 2. Create Prompt Version: Write initial jailbreak attempt
-   ↓
 3. Run Tests: Test against GPT-4 Turbo and GPT-4
-   ↓
 4. View Results: Check JEF scores (e.g., 85/100 on nerve_agent)
-   ↓
 5. Iterate: Create new version with refined approach
-   ↓
 6. Run Tests: Test new version
-   ↓
 7. Submit: Generate bug bounty submission for successful jailbreak
-```
-
-## Project Structure
-
-```
-vuln-research-tool/
-├── app.py                      # Flask application entry point
-├── config/
-│   └── models.yaml             # LLM model configuration
-├── models/
-│   ├── database.py             # SQLAlchemy ORM models
-│   ├── config.py               # Configuration management
-│   ├── test_runner.py          # Test execution logic
-│   ├── statistics.py           # Results analysis
-│   └── submission.py           # Bug bounty submission generation
-├── templates/                  # Jinja2 HTML templates
-│   ├── sessions.html           # Session list view
-│   ├── session_detail.html     # Session detail with prompt editor
-│   ├── results.html            # Test results display
-│   ├── submit_form.html        # Submission form
-│   ├── submission_output.html  # Generated submission display
-│   └── settings.html           # API key configuration
-├── static/                     # Static assets (CSS, JS, images)
-├── data/                       # SQLite database storage
-│   └── vuln_research.db        # Application database
-├── .env                        # Environment variables (not in git)
-├── .env.example                # Environment template
-├── pyproject.toml              # Python project configuration
-└── README.md                   # This file
 ```
 
 ## Database Schema
